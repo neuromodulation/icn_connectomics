@@ -1,0 +1,32 @@
+root = 'D:\Dropbox (Brain Modulation Lab)\Shared Lab Folders\CRCNS\MOVEMENT DATA';
+leaddbs = 'C:\code\leaddbs';
+wjn_toolbox = 'C:\code\wjn_toolbox';
+spm12 = 'C:\code\spm12';
+
+addpath(spm12)
+addpath(genpath(leaddbs))
+addpath(wjn_toolbox)
+
+
+%% FIND ALL ELECTRODES FILES TO READ IN MNI COORDS
+[files,folders] = wjn_subdir(fullfile(root,'*electrodes.tsv'));
+
+%% CREATE SPHERICAL ROIS FROM ELECTRODE LOCATIONS FOR ALL SUBJECTS
+for a =1:length(folders)
+    T=tdfread(files{a});
+    channels = cellstr(T.name);
+    connectomics_dir = fullfile(folders{a}(1:end-4),'connectomics');
+    mkdir(connectomics_dir)
+    side = find(ismember(folders{a}(end-5),{'h','f'})); % right = 1; left = 2;
+    n=0;
+    
+    for  b= 1:length(channels)
+        if ~strcmp(channels{b}(1:3),'STN')
+            n=n+1;
+            mni = [-abs(T.x(a)) T.y(a) T.z(a)];
+            rois{n}=wjn_spherical_roi(fullfile(connectomics_dir,['ROI_' channels{b} '.nii']),mni,2);
+        elseif side == 1 && strcmp(channels{b}(1:5),'STN_R
+    end
+end
+
+
