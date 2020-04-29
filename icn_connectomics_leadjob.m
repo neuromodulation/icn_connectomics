@@ -2,14 +2,14 @@ function icn_connectomics_leadjob(seeds,cdir)
 % - Lead-DBS Job created on 29-Apr-2020 23:41:16 -
 % --------------------------------------
 
-if isempty('cdir','var')
+if ~exist('cdir','var')
     cdir =cd;
 end
 lead path;
 
 options = getoptslocal;
 options.cdir = cdir;
-options.seeds = seeds;
+options.lcm.seeds = seeds;
 ea_run('run', options);
 
 
@@ -144,7 +144,7 @@ options.dolc = 0;
 
 %%
 options.lcm.seeddef = 'manual';
-options.lcm.odir = cdir;
+options.lcm.odir = cd;
 options.lcm.omask = [];
 options.lcm.struc.do = 1;
 options.lcm.struc.connectome = 'PPMI_85 (Ewert 2017)';
