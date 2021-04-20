@@ -30,12 +30,18 @@ if ~isfield(options,'template_file')
     options.template_file = fullfile(spm('dir'),'canonical','single_subj_T1.nii');
 end
 
+if ~isfield(options,'ignore_bad')
+    options.ignore_bad = 0;
+end
+
 %% Read the csv file into Table options.T
-options.T=[];
+options.T=[];options.ignored_files=[];options.read_files=[];
 for a = 1:length(options.csvfiles)
+    
     try
         newT=[];
-        newT = readtable(options.csvfiles{a});
+        
+        newT = readtable(options.csvfiles{a},'TreatAsEmpty','na','delimiter',',');
         if ~isempty(newT)
             if a == 1
                 options.T = newT;
@@ -43,10 +49,20 @@ for a = 1:length(options.csvfiles)
                 options.T = [options.T;newT];
             end
             disp([num2str(size(newT,1)) ' stimulation points added from ' options.csvfiles{a}])
+            options.read_files=[options.read_files;options.csvfiles(a)];
         end
     catch ME
-        warning(['Could not load ' options.csvfiles{a} '; The file is ignored.'])
-        warning(ME.message)
+        if options.ignore_bad
+            warning(['Could not load ' options.csvfiles{a} '; The file is ignored.'])
+            warning(ME.message)
+            options.ignored_files=[options.ignored_files;options.csvfiles(a)];
+        else
+            warning(['Could not load ' options.csvfiles{a} '; The file is ignored.'])
+            warning(ME.message)
+            disp(newT)
+            keyboard
+          
+        end
     end
 end
 disp(['DONE. ' num2str(size(options.T,1)) ' stimulation points loaded.'])
@@ -84,9 +100,9 @@ for f = 1:length(options.filters)
         end
     end
     
-   
+    
     %% Plot surface
-
+    
     if ~isfield(options, 'plot_surface') || options.plot_surface
         figure('InvertHardcopy','off')
         p=wjn_plot_surface(fullfile(ea_getearoot,'templates\space\MNI_ICBM_2009b_NLIN_ASYM\cortex\CortexHiRes.mat'));
@@ -102,7 +118,7 @@ for f = 1:length(options.filters)
         myprint(fullfile(options.analysis_fdir,'figures',[options.analysis_name '_' options.filters(f).name ]))
         
     end
-     if isempty(options.filters(f).filter_index)
+    if isempty(options.filters(f).filter_index)
         continue
     end
     
@@ -115,12 +131,12 @@ for f = 1:length(options.filters)
             current_seed_filename = ['seed_N_' num2str(a) '_' options.analysis_name '_' options.filters(f).name '_' strrep(strrep([current_seed.ArticleID{1},'_',current_seed.Figure{1},...
                 ['_X' num2str(current_seed.X,3) '_Y' num2str(current_seed.Y,3) '_Z' num2str(current_seed.Z,3)]],'.','-'),' ','_'),'.nii'];
             current_seed_coords = [options.T.X(options.filters(f).filter_index(a)) options.T.Y(options.filters(f).filter_index(a)) options.T.Z(options.filters(f).filter_index(a))];
-                options.filters(f).roi_files{a,1}=wjn_spherical_roi(fullfile(options.analysis_fdir,'niftis',options.filters(f).name,current_seed_filename),current_seed_coords,options.stimulation_radius,options.template_file);
-                options.filters(f).mni(a,:) = current_seed_coords;
+            options.filters(f).roi_files{a,1}=wjn_spherical_roi(fullfile(options.analysis_fdir,'niftis',options.filters(f).name,current_seed_filename),current_seed_coords,options.stimulation_radius,options.template_file);
+            options.filters(f).mni(a,:) = current_seed_coords;
         end
     end
     options.filters(f).table = options.T(options.filters(f).filter_index,:);
-   
+    
     current_seed_filename = strrep(['seeds_N' num2str(a) '_' options.analysis_name '_' options.filters(f).name '.nii'],' ','_');
     wjn_nii_sum(options.filters(f).roi_files,fullfile(options.analysis_fdir,'niftis',strrep(['heatmap_N' num2str(a) '_' options.analysis_name '_' options.filters(f).name '.nii'],' ','_')));
     options.filters(f).master_seed = wjn_spherical_roi(fullfile(options.analysis_fdir,'niftis',current_seed_filename),options.filters(f).mni,options.stimulation_radius,options.template_file);
