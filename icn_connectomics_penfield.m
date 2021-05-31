@@ -9,6 +9,8 @@ elseif ~iscell(options.csvfiles)
     options.csvfiles = {options.csvfiles};
 end
 
+
+
 if ~isfield(options,'analysis_dir')
     error('Please define options.analysis_dir')
 else
@@ -42,6 +44,18 @@ for a = 1:length(options.csvfiles)
         newT=[];
         
         newT = readtable(options.csvfiles{a},'TreatAsEmpty','na','delimiter',',');
+        if ~iscell(newT.Comment)
+            newT.Comment = cellstr(num2str(newT.Comment));
+        end
+        if ~iscell(newT.Case)
+            newT.Case = cellstr(num2str(newT.Case));
+        end
+        if ~iscell(newT.ID)
+            newT.ID = cellstr(num2str(newT.ID));
+        end
+        if ~iscell(newT.Figure)
+            newT.Figure = cellstr(num2str(newT.Figure));
+        end
         if ~isempty(newT)
             if a == 1
                 options.T = newT;
@@ -91,6 +105,7 @@ for f = 1:length(options.filters)
                 else
                     current_filter_exact = 0;
                 end
+
                 if n==1
                     options.filters(f).filter_index=ci(options.filters(f).(filter_fields{a}).string,options.T.(filter_fields{a}),current_filter_exact);
                 else
