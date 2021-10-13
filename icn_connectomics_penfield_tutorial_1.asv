@@ -105,20 +105,4 @@ options.ignore_list = {'E:\OneDrive - Charité - Universitätsmedizin Berlin\Dokum
 % Run the script
 icn_connectomics_penfield(options)
 
-%% Tutorial 6: Export all stimulation points from a single map.
-% Define the name of your analysis and the folder it should be stored in:
-clear all, close all
-options=[];
-options.analysis_name = 'Tutorial_6-Creating random selections';
-options.analysis_dir = 'E:\OneDrive - Charité - Universitätsmedizin Berlin\Dokumente\PROJECT Penfield Atlas\Analyses\';
-
-% Define the csv files to be loaded:
-options.csvfiles = fullfile('E:\OneDrive - Charité - Universitätsmedizin Berlin\Dokumente\PROJECT Penfield Atlas\Atlas_Additional\Templates_and_Examples','example.csv');
-
-% Check overwrite to be able to delete and overwrite previous versions of the same analysis
-options.overwrite = 1;
-options.rand_n = 433; % Note that if the original collection is smaller than the number of randomized points, they will be oversampled. 
-% Run the script
-icn_connectomics_penfield(options)
-
 

@@ -1,8 +1,6 @@
 function icn_connectomics_penfield(options)
 
 
-
-
 if ~isfield(options,'csvfiles')
     error('Please define options.csvfiles')
 elseif ~iscell(options.csvfiles)
@@ -34,6 +32,10 @@ end
 
 if ~isfield(options,'ignore_bad')
     options.ignore_bad = 0;
+end
+
+if ~isfield(options,'rand_n')
+    options.rand_n = 0;
 end
 
 %% Read the csv file into Table options.T
@@ -74,13 +76,10 @@ for a = 1:length(options.csvfiles)
             warning(['Could not load ' options.csvfiles{a} '; The file is ignored.'])
             warning(ME.message)
             disp(newT)
-            keyboard
-          
         end
     end
 end
 disp(['DONE. ' num2str(size(options.T,1)) ' stimulation points loaded.'])
-
 
 %% Filter
 
@@ -96,8 +95,12 @@ for f = 1:length(options.filters)
     options.filters(f).filter_index = [];n=0;
     for a = 1:length(filter_fields)
         if strcmp(options.filters(f).name,'all')
-            options.filters(f).filter_index = 1:size(options.T,1);
+                if isfield(options,'rand_n') && options.rand_n
+                    options.filters(f).rand_n = options.rand_n;
+                end
+                options.filters(f).filter_index = 1:size(options.T,1);
         else
+       
             if isfield(options.filters(f).(filter_fields{a}),'string') && ~isempty(options.filters(f).(filter_fields{a}).string)
                 n=n+1;
                 if isfield(options.filters(f).(filter_fields{a}),'exact') && options.filters(f).(filter_fields{a}).exact
@@ -113,8 +116,18 @@ for f = 1:length(options.filters)
                 end
             end
         end
+        if isfield(options.filters(f),'rand_n') && options.filters(f).rand_n
+            warning('Randomizing outputs!')
+            if options.filters(f).rand_n > length(options.filters(f).filter_index)
+                warning('Number of selected stimulation point is smaller than the random output vector, oversampling!')
+                options.filters(f).filter_index = randi(length(options.filters(f).filter_index),[options.filters(f).rand_n 1]);
+            else
+                options.filters(f).filter_index = randsample(length(options.filters(f).filter_index),options.filters(f).rand_n,'false');
+            end
+        end
+        
+   
     end
-    
     
     %% Plot surface
     
